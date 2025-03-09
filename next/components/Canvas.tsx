@@ -7,6 +7,8 @@ export default function Canvas() {
 	// update canvas without rerender -> useref
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const [isDrawing, setIsDrawing] = useState(false);
+	const [frames, setFrames] = useState<string[]>([]);
+	const [currentFrame, setCurrentFrame] = useState<number>(0);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -35,9 +37,20 @@ export default function Canvas() {
 			ctx.stroke();	
 		};
 
-		const stopDrawing = (e: MouseEvent) => {
+		const stopDrawing = () => {
 			setIsDrawing(false);
 			ctx.closePath();
+			captureFrame();
+		};
+
+		const captureFrame = () => {
+			const canvas = canvasRef.current;
+			if (!canvas) return;
+
+			// base64 "image"
+			const imageData = canvas.toDataURL();
+			setFrames((prevFrames) => [...prevFrames.slice(0, currentFrame + 1), imageData]);
+			setCurrentFrame((prev) => prev + 1);
 		};
 
 		// apply handlers
@@ -53,13 +66,59 @@ export default function Canvas() {
 			canvas.removeEventListener("mouseup", stopDrawing);
 			canvas.removeEventListener("mouseleave", stopDrawing);
 		};
-	}, [isDrawing]);
+	}, [isDrawing, currentFrame]);
 
+	// use loadFrame and setCurrentFrame handlers
+	const goToPreviousFrame = () => {
+		if (currentFrame > 0) {
+			setCurrentFrame((prev) => prev - 1);
+			loadFrame(currentFrame - 1);
+		}
+	}
+
+	// pretty similar
+	const goToNextFrame = () => {
+		if (currentFrame + 1 < frames.length) {
+			setCurrentFrame((prev) => prev + 1);
+			loadFrame(currentFrame + 1);
+		}
+	}
+
+	const loadFrame = (index: number) => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+		const ctx = canvas.getContext("2d");
+		// whattt
+		const image = new Image();
+		image.src = frames[index];
+
+		// use callback to draw from array
+		image.onload = () => {
+			// optional chain
+			ctx?.clearRect(0, 0, canvas.width, canvas.height);
+			ctx?.drawImage(image, 0, 0);
+		};
+	};
+
+	const playFrames = () => {
+		let i = 0;
+		const N = frames.length;
+		setInterval(() => {
+			loadFrame(i % N);
+			setCurrentFrame(i % N);
+			i++;
+		}, 1000 / 24); // 24 frames per second
+	};
 
 	// return div with canvas
 	return (
 		<div className="flex justify-center items-center h-screen bg-gray-100">
 			<canvas ref={canvasRef} width={800} height={500} className="border bg-white" />
+			<div className="mt-4">
+				<button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={goToPreviousFrame}>prev</button>
+				<button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={goToNextFrame}>next</button>
+				<button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={playFrames}>play</button>
+			</div>
 		</div>
 	);
 }
