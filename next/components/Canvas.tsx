@@ -14,6 +14,7 @@ export default function Canvas() {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const intervalRef = useRef<NodeJS.Timeout | null>(null);
 	const [frameRate, setFrameRate] = useState<number>(24);
+	const [brushSize, setBrushSize] = useState<number>(5);
 	// update frame using current data on canvas
 	const updateFrame = useCallback(
 		() => {
@@ -60,7 +61,7 @@ useEffect(() => {
 	if (!ctx) return;
 
 	// modify context to get a more pixel
-	ctx.lineWidth = 5;
+	ctx.lineWidth = brushSize;
 	ctx.lineCap = "square";
 	ctx.lineJoin = "miter";
 	ctx.strokeStyle = "black";
@@ -97,7 +98,7 @@ useEffect(() => {
 		canvas.removeEventListener("mousemove", draw);
 		canvas.removeEventListener("mouseup", stopDrawing);
 	};
-}, [isDrawing, currentFrame, loadFrame, updateFrame]);
+}, [brushSize, isDrawing, currentFrame, loadFrame, updateFrame]);
 
 
 // create a current frame with a splice
@@ -176,18 +177,26 @@ const playFrames = () => {
 // use the frameRate slider
 const handleFrameRate = (value: number) => {
 	setFrameRate(value);
-	console.log(frameRate);
+	console.log(`frame rate ${frameRate}`);
+};
+
+const handleBrushSize = (value: number) => {
+	setBrushSize(value);
+	console.log(`brush size ${brushSize}`);
 };
 
 // return div with canvas and a few buttons and inputs
 return (
 	<div className="flex flex-col justify-center items-center h-screen bg-gray-100">
 		<canvas ref={canvasRef} width={800} height={500} className="border bg-white"  />
-		<p className="px-3 py-3">{frameRate}</p>
-		<p className="px-3 py-3">{1 + currentFrame}</p>
 
 		<div className="mt-4">
+			<label htmlFor="frameRateSelector">frameRate: {frameRate}</label>
 			<input id="frameRateSelector" className="block mb-2" type="range" min={12} max={60} value={frameRate} onChange={(e) => handleFrameRate(e.target.value)}/>
+
+			<label htmlFor="brushSizer">brushSize: {brushSize}</label>
+			<input id="brushSizer" className="block mb-2" type="range" min={0.1} max={20} value={brushSize} onChange={(e) => handleBrushSize(e.target.value)}/>
+
 			<button className="bg-green-500 text-white px-4 py-3 rounded" onClick={addNewFrame}>new frame</button>
 			<button className="bg-red-500 text-white px-4 py-3 rounded" onClick={deleteFrame}>delete frame</button>
 
@@ -198,6 +207,7 @@ return (
 
 		<div ref={timelineRef} className="w-full mt-4 px-4">
 			<div className="overflow-x-auto bg-gray-300 p-2 rounded-lg">
+				<p>viewing frame {1 + currentFrame}</p>
 				<div className="flex space-x-2">
 					{frames.map((frame, index) => (
 						<div 
