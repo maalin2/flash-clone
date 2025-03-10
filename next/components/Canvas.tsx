@@ -7,10 +7,9 @@ import NextImage from 'next/image';
 export default function Canvas() {
 	// update canvas without rerender -> useref
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const timelineRef = useRef<HTMLCanvasElement>(null);
 
 	const [isDrawing, setIsDrawing] = useState(false);
-	const [frames, setFrames] = useState<string[]>([null]);
+	const [frames, setFrames] = useState<(string | null)[]>([null]);
 	const [currentFrame, setCurrentFrame] = useState<number>(0);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -63,11 +62,11 @@ export default function Canvas() {
 			// onion skin
 			if (isPlaying == false) {
 				if (frames[index - 1]) {
-					drawImage(frames[index - 1], 0.08);
+					drawImage(frames[index - 1] ?? "", 0.08);
 				}
 				
 				if (frames[index + 1]) {
-					drawImage(frames[index + 1], 0.08);
+					drawImage(frames[index + 1] ?? "", 0.08);
 				}
 			}
 
@@ -222,10 +221,10 @@ return (
 
 		<div className="mt-4">
 			<label htmlFor="frameRateSelector">frameRate: {frameRate}</label>
-			<input id="frameRateSelector" className="block mb-2" type="range" min={12} max={60} value={frameRate} onChange={(e) => handleFrameRate(e.target.value)}/>
+			<input id="frameRateSelector" className="block mb-2" type="range" min={12} max={60} value={frameRate} onChange={(e) => handleFrameRate(parseInt(e.target.value))}/>
 
 			<label htmlFor="brushSizer">brushSize: {brushSize}</label>
-			<input id="brushSizer" className="block mb-2" type="range" min={0.1} max={20} value={brushSize} onChange={(e) => handleBrushSize(e.target.value)}/>
+			<input id="brushSizer" className="block mb-2" type="range" min={0.1} max={20} value={brushSize} onChange={(e) => handleBrushSize(parseFloat(e.target.value))}/>
 
 			<button className={`${erasing ? "bg-red-500" : "bg-green-500"} text-white px-4 py-3 rounded`} onClick={handleErasing}>{erasing ? "erasing" : "drawing"}</button>
 
@@ -237,7 +236,7 @@ return (
 			<button className="bg-blue-500 text-white px-4 py-3 rounded" onClick={playFrames}>{isPlaying ? "stop" : "play" }</button>
 		</div>
 
-		<div ref={timelineRef} className="w-full mt-4 px-4">
+		<div className="w-full mt-4 px-4">
 			<div className="overflow-x-auto bg-gray-300 p-2 rounded-lg">
 				<p>viewing frame {1 + currentFrame}</p>
 				<div className="flex space-x-2">
