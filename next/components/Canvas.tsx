@@ -44,14 +44,34 @@ export default function Canvas() {
 
 			if (!frames[index]) return; 
 
-			const image = new Image;
-			image.src = frames[index] || "";
-			console.log(`loaded frame ${index}`);
-			image.onload = () => {
-				ctx?.clearRect(0, 0, canvas.width, canvas.height);
-				ctx?.drawImage(image, 0, 0);
-			};
-		}, [frames]
+			const drawImage = (src: string, opacity: number) => {
+				const image = new Image();
+				image.src = src;
+				image.onload = () => {
+					ctx.globalAlpha = opacity;
+					ctx.drawImage(image, 0, 0);
+					ctx.globalAlpha = 1.0;
+
+				}
+
+			}
+
+			if (frames[index]) {
+				drawImage(frames[index], 1.0);
+			}
+
+			// onion skin
+			if (isPlaying == false) {
+				if (frames[index - 1]) {
+					drawImage(frames[index - 1], 0.08);
+				}
+				
+				if (frames[index + 1]) {
+					drawImage(frames[index + 1], 0.08);
+				}
+			}
+
+		}, [isPlaying, frames]
 );
 
 useEffect(() => {
@@ -192,7 +212,7 @@ const handleBrushSize = (value: number) => {
 
 const handleErasing = () => {
 	setErasing(!erasing);
-	console.log(erasing ? "erasing" : "drwaing");
+	console.log(erasing ? "erasing" : "drawing");
 };
 
 // return div with canvas and a few buttons and inputs
