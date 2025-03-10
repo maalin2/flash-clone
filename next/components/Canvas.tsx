@@ -8,6 +8,7 @@ export default function Canvas() {
 	// update canvas without rerender -> useref
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const timelineRef = useRef<HTMLCanvasElement>(null);
+
 	const [isDrawing, setIsDrawing] = useState(false);
 	const [frames, setFrames] = useState<string[]>([null]);
 	const [currentFrame, setCurrentFrame] = useState<number>(0);
@@ -15,6 +16,7 @@ export default function Canvas() {
 	const intervalRef = useRef<NodeJS.Timeout | null>(null);
 	const [frameRate, setFrameRate] = useState<number>(24);
 	const [brushSize, setBrushSize] = useState<number>(5);
+	const [erasing, setErasing] = useState(false);
 	// update frame using current data on canvas
 	const updateFrame = useCallback(
 		() => {
@@ -60,11 +62,14 @@ useEffect(() => {
 	const ctx = canvas.getContext("2d");
 	if (!ctx) return;
 
+	ctx.fillStyle = "white";
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+
 	// modify context to get a more pixel
 	ctx.lineWidth = brushSize;
 	ctx.lineCap = "square";
 	ctx.lineJoin = "miter";
-	ctx.strokeStyle = "black";
+	ctx.strokeStyle = erasing ? "white" : "black";
 
 	loadFrame(currentFrame);
 
@@ -98,7 +103,7 @@ useEffect(() => {
 		canvas.removeEventListener("mousemove", draw);
 		canvas.removeEventListener("mouseup", stopDrawing);
 	};
-}, [brushSize, isDrawing, currentFrame, loadFrame, updateFrame]);
+}, [brushSize, erasing, isDrawing, currentFrame, loadFrame, updateFrame]);
 
 
 // create a current frame with a splice
@@ -185,6 +190,11 @@ const handleBrushSize = (value: number) => {
 	console.log(`brush size ${brushSize}`);
 };
 
+const handleErasing = () => {
+	setErasing(!erasing);
+	console.log(erasing ? "erasing" : "drwaing");
+};
+
 // return div with canvas and a few buttons and inputs
 return (
 	<div className="flex flex-col justify-center items-center h-screen bg-gray-100">
@@ -196,6 +206,8 @@ return (
 
 			<label htmlFor="brushSizer">brushSize: {brushSize}</label>
 			<input id="brushSizer" className="block mb-2" type="range" min={0.1} max={20} value={brushSize} onChange={(e) => handleBrushSize(e.target.value)}/>
+
+			<button className={`${erasing ? "bg-red-500" : "bg-green-500"} text-white px-4 py-3 rounded`} onClick={handleErasing}>{erasing ? "erasing" : "drawing"}</button>
 
 			<button className="bg-green-500 text-white px-4 py-3 rounded" onClick={addNewFrame}>new frame</button>
 			<button className="bg-red-500 text-white px-4 py-3 rounded" onClick={deleteFrame}>delete frame</button>
@@ -212,7 +224,7 @@ return (
 					{frames.map((frame, index) => (
 						<div 
 							key={index} 
-							className={`w-20 h-16 border-2 ${
+							className={`flex justify-center w-20 h-16 border-2 ${
 							index == currentFrame ? "border-blue-500" : "border-gray-400"
 							} cursor-pointer`}
 							onClick={() => selectFrame(index)}
