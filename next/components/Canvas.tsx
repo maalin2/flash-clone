@@ -41,7 +41,7 @@ export default function Canvas() {
 			const ctx = canvas.getContext("2d");
 			if (!ctx) return;
 
-			if (!frames[index]) return; 
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 			const drawImage = (src: string, opacity: number) => {
 				const image = new Image();
@@ -50,25 +50,23 @@ export default function Canvas() {
 					ctx.globalAlpha = opacity;
 					ctx.drawImage(image, 0, 0);
 					ctx.globalAlpha = 1.0;
-
 				}
-
 			}
 
 			if (frames[index]) {
 				drawImage(frames[index], 1.0);
 			}
 
-//			// onion skin
-//			if (isPlaying == false) {
-//				if (frames[index - 1]) {
-//					drawImage(frames[index - 1] ?? "", 0.08);
-//				}
-//				
-//				if (frames[index + 1]) {
-//					drawImage(frames[index + 1] ?? "", 0.08);
-//				}
-//			}
+			// onion skin
+			if (isPlaying == false) {
+				if (frames[index - 1]) {
+					drawImage(frames[index - 1] ?? "", 0.08);
+				}
+				
+				if (frames[index + 1]) {
+					drawImage(frames[index + 1] ?? "", 0.08);
+				}
+			}
 
 		}, [isPlaying, frames]
 );
@@ -84,16 +82,16 @@ useEffect(() => {
 	ctx.fillStyle = "white";
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-	// modify context to get a more pixel
+	// modify context to get a more pixel-y look
 	ctx.lineWidth = brushSize;
 	ctx.lineCap = "square";
 	ctx.lineJoin = "miter";
-	ctx.strokeStyle = erasing ? "white" : "black";
-
+	
 	loadFrame(currentFrame);
 
 	// handlers to draw 
 	const startDrawing = (e: MouseEvent) => {
+		const ctx = canvasRef.current.getContext('2d');
 		ctx.beginPath();
 		ctx.moveTo(e.offsetX, e.offsetY);
 		setIsDrawing(true);
@@ -101,6 +99,9 @@ useEffect(() => {
 
 	const draw = (e: MouseEvent) => {
 		if (!isDrawing) return;
+		// use this to erase
+		ctx.globalCompositeOperation = erasing ? "destination-out" : "source-over";
+
 		ctx.lineTo(e.offsetX, e.offsetY);
 		ctx.stroke();	
 	};
@@ -108,6 +109,7 @@ useEffect(() => {
 	const stopDrawing = () => {
 		setIsDrawing(false);
 		ctx.closePath();
+		ctx.globalCompositeOperation = "source-over";
 		updateFrame();
 	};
 
