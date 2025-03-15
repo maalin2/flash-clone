@@ -41,8 +41,6 @@ export default function Canvas() {
 			const ctx = canvas.getContext("2d");
 			if (!ctx) return;
 
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-
 			const drawImage = (src: string, opacity: number) => {
 				const image = new Image();
 				image.src = src;
@@ -57,7 +55,7 @@ export default function Canvas() {
 				drawImage(frames[index], 1.0);
 			}
 
-			// onion skin
+//			// onion skin
 			if (isPlaying == false) {
 				if (frames[index - 1]) {
 					drawImage(frames[index - 1] ?? "", 0.08);
@@ -99,9 +97,8 @@ useEffect(() => {
 
 	const draw = (e: MouseEvent) => {
 		if (!isDrawing) return;
-		// use this to erase
+		// if erasing we dont want to erase on top of onion skin
 		ctx.globalCompositeOperation = erasing ? "destination-out" : "source-over";
-
 		ctx.lineTo(e.offsetX, e.offsetY);
 		ctx.stroke();	
 	};
