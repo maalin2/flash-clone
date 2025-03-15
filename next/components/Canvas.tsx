@@ -59,16 +59,16 @@ export default function Canvas() {
 				drawImage(frames[index], 1.0);
 			}
 
-			// onion skin
-			if (isPlaying == false) {
-				if (frames[index - 1]) {
-					drawImage(frames[index - 1] ?? "", 0.08);
-				}
-				
-				if (frames[index + 1]) {
-					drawImage(frames[index + 1] ?? "", 0.08);
-				}
-			}
+//			// onion skin
+//			if (isPlaying == false) {
+//				if (frames[index - 1]) {
+//					drawImage(frames[index - 1] ?? "", 0.08);
+//				}
+//				
+//				if (frames[index + 1]) {
+//					drawImage(frames[index + 1] ?? "", 0.08);
+//				}
+//			}
 
 		}, [isPlaying, frames]
 );
@@ -237,27 +237,27 @@ return (
 		</div>
 
 		<div className="w-full mt-4 px-4">
-			<div className="overflow-x-auto bg-gray-300 p-2 rounded-lg">
-				<p>viewing frame {1 + currentFrame}</p>
-				<div className="flex space-x-2">
+			<div className="bg-gray-300 p-2 rounded-lg">
+				<p>Viewing frame {1 + currentFrame}</p>
+				<div className="flex space-x-2 overflow-x-auto p-2">
 					{frames.map((frame, index) => (
-						<div 
-							key={index} 
-							className={`flex justify-center w-20 h-16 border-2 ${
-							index == currentFrame ? "border-blue-500" : "border-gray-400"
-							} cursor-pointer`}
-							onClick={() => selectFrame(index)}
+						<div
+						key={index}
+						className={`flex-shrink-0 justify-center w-20 h-16 border-2 ${
+							index === currentFrame ? "border-blue-500" : "border-gray-400"
+						} cursor-pointer`}
+						onClick={() => selectFrame(index)}
 						>
 							{frame ? (
 								<NextImage width={80} height={64} alt="frame image" src={frame} />
 							) : (
-								<div className="flex justify-center">empty</div>
+							<div className="flex justify-center items-center w-full h-full">empty</div>
 							)}
 						</div>
-					))}	    
-					</div>
+					))}
 				</div>
 			</div>
 		</div>
-	);
+	</div>
+);
 }
