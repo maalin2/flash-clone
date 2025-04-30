@@ -124,8 +124,25 @@ useEffect(() => {
 }, [brushSize, erasing, isDrawing, currentFrame, loadFrame, updateFrame]);
 
 
-// create a current frame with a splice
-const addNewFrame = () => {
+const newFrame = () => {
+	const canvas = canvasRef.current;
+	if (!canvas) return;
+	const ctx = canvas.getContext("2d");
+	if (!ctx) return;
+
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	const blankFrame = canvas.toDataURL();
+
+	setFrames((prevFrames) => {
+		const newFrames = [...prevFrames];
+		newFrames.splice(currentFrame + 1, 0, blankFrame);
+		return newFrames;
+	});
+
+	setCurrentFrame(currentFrame + 1);
+};
+
+const copyFrame = () => {
 	const canvas = canvasRef.current;
 	if (!canvas) return;
 	const ctx = canvas.getContext("2d");
@@ -227,7 +244,8 @@ return (
 
 			<button className={`${erasing ? "bg-red-500" : "bg-green-500"} text-white px-4 py-3 rounded`} onClick={handleErasing}>{erasing ? "erasing" : "drawing"}</button>
 
-			<button className="bg-green-500 text-white px-4 py-3 rounded" onClick={addNewFrame}>new frame</button>
+			<button className="bg-green-500 text-white px-4 py-3 rounded" onClick={newFrame}>new frame</button>
+			<button className="bg-green-500 text-white px-4 py-3 rounded" onClick={copyFrame}>copy frame</button>
 			<button className="bg-red-500 text-white px-4 py-3 rounded" onClick={deleteFrame}>delete frame</button>
 
 			<button className="bg-blue-500 text-white px-4 py-3 rounded" onClick={goToPreviousFrame}>prev</button>
