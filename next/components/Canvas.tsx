@@ -89,7 +89,10 @@ useEffect(() => {
 
 	// handlers to draw 
 	const startDrawing = (e: MouseEvent) => {
-		const ctx = canvasRef.current.getContext('2d');
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return;
 		ctx.beginPath();
 		ctx.moveTo(e.offsetX, e.offsetY);
 		setIsDrawing(true);
